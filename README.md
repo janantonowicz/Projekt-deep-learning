@@ -1,6 +1,6 @@
-# Fashion MNIST Image Classification
+# Klasyfikacja obrazów Fashion MNIST
 
-### Python Web & Deep Learning Project Report
+### Projekt Python Web & Deep Learning
 
 ## Website demo
 
@@ -9,67 +9,63 @@ https://github.com/user-attachments/assets/006cd1d9-c479-4982-be2d-e6a27c273dc5
 
 
 
-## 🧠 Task Description
+## Co realizują sieci?
 
-The goal of this project is **image classification** using deep learning. The neural network assigns each input image to one of **10 categories**:
+Klasyfikacja obrazu i przypasowanie go do jednej z 10 kategorii:
 
 `t-shirt`, `trouser`, `pullover`, `dress`, `coat`, `sandal`, `shirt`, `sneaker`, `bag`, `ankle boot`
 
-## 📊 Dataset Description
+## Opis datasetu
 
-### Source
+### Źródło pochodzenie
 
-The project uses the **Fashion MNIST** dataset.
+Wykorzystano zbiór danych Fashion MNIST.
 
-### Dataset Properties
+### Fashion MNIST
 
-- 70,000 grayscale images
+- 70,000 czarnobiałych obrazów przdstawiających ubrania z 10 kategorii
     
-- Image size: **28 × 28 pixels**
+- Wymiary obrazu: **28 × 28 pixels**
+
+### Przetwarzanie wstępne:
     
-- Each image belongs to one of 10 classes
+- Dane wejściowe zostały znormalizowane do zakresu **[0, 1]**
     
-- Data is normalized to the range **[0, 1]**
-    
-- Images reshaped to **28 × 28 × 1** (added depth channel)
+- Kształt obrazów został zmieniony na format 28x28x1 (dodanie kanału głębi)
     
 
-### Dataset Split
+### Podział na zbiory
 
-|Set|Samples|Percentage|
+|Zbiór|Liczba próbek|Procent [%]|
 |---|---|---|
-|Training|48,000|68.5%|
-|Validation|12,000|17%|
-|Test|10,000|14.5%|
+|Treningowy|48,000|68.5%|
+|Walidacyjny|12,000|17%|
+|Testowy|10,000|14.5%|
 
-## 🏗️ Model Architecture & Training Process
+## Opis architektur sieci oraz procesu uczenia
 
-### 🔹 Convolutional Blocks
+### Bloki konwolucyjne
 
-**Block 1**
+**Blok 1**
 
-- 2 × Conv2D (32 filters, kernel 3×3)
+- Dwie warstwy Conv2D (32 filters, kernel 3×3)
     
 - MaxPooling2D
     
 
-**Block 2**
+**Blok 2**
 
-- 2 × Conv2D (64 filters, kernel 3×3)
+- Dwie warstwy Conv2D (64 filters, kernel 3×3)
     
 - MaxPooling2D
     
 
-Convolutional layers scan the image for patterns.
+Warstwa konwolucyjna skanuje obraz poszukując wzorców. Pierwszy blok szuka 32 wzorców (np. pionowe linie, kropki) Drugi blok szuka 64 bardziej złożonych wzorców.
+Kernel 3 x 3 to rozmiar okna skanującego.
 
-- Block 1 learns ~32 simple features (lines, dots, edges)
-    
-- Block 2 learns ~64 more complex patterns
     
 
-### 🔹 Dense Layers
-
-After convolutional blocks:
+Po blokach konwolucyjnych zastosowano warstwę Flatten, która przekształca mapy cech do postaci wektora, a następnie warstwy w pełni połączone (Dense).
 
 python
 
@@ -78,16 +74,15 @@ X = tf.keras.layers.Flatten()(X)
 X = tf.keras.layers.Dense(128, activation="relu")(X)
 ```
 
-- Hidden layer: **128 neurons**, ReLU activation
-    
-- Output layer: **10 neurons**, Softmax activation (one per class)
-    
+Warstwa ukryta składa się z 128 neuronów z funkcją aktywacji ReLU, natomiast warstwa 
+wyjściowa posiada 10 neuronów z funkcją Softmax, odpowiadających liczbie klas w zbiorze danych.
 
-### 🔹 Loss Function
+### Funkcja Straty
 
-**Sparse Categorical Crossentropy** Used for multi-class classification with integer labels.
+Jako funkcję straty wykorzystano Sparse Categorical Crossentropy, odpowiednią dla problemu wieloklasowej klasyfikacji z etykietami zapisanymi w postaci liczb całkowitych.
 
-### 🔹 Optimizer
+
+### Optymalizator
 
 python
 
@@ -95,47 +90,34 @@ python
 optimizer = tf.keras.optimizers.Adam(1e-3)
 ```
 
-Adam adjusts network weights based on the loss to improve predictions.
+Wykorzystano optymalizator Adam.
+
+Algorytm decyduje jak zmienić wagi sieci neuronowej na podstawie obliczonej straty – błędu, tak aby w następnym kroku wynik był lepszy.
+
 
 ### 🔹 Batch Size
-
-Kod
 
 ```
 BATCH_SIZE = 128
 ```
 
-Weights are updated after every 128 images.
+Model aktualizuje swoje wagi po przeanalizowaniu każdych z 128 obrazków.
 
-### 🔹 Early Stopping
+### Liczba epok i Early Stopping
 
-To prevent overfitting:
-
-- `patience = 10`
-    
-- Training stops if validation loss does not improve for 10 epochs
-    
-- `restore_best_weights = True` ensures the best model is saved
+Aby osiągnąć jak najlepszy wynik wykorzystałem mechanizm **Early Stopping**. Dzięki temu proces uczenia zostanie automatycznie przerwany jeśli przez 10 kolejnych epok (`patience=10`) strata na zbiorze walidacyjnym nie ulegnie poprawie.
+Dzięki `restore_best_weights` finalny model to ten który osiągnął najlepszy wynik, a nie ten z ostatniej epoki.
     
 
-## 🖼️ Model with Data Augmentation
+## Model z Augmentacją
 
-Applied augmentations:
+- Losowe odbicie obrazu (RandomFlip)
+- Losowe przesunięcie, obrót, przybliżenie oraz zmiana kontrastu
+Dzięki temu zwiększamy różnorodność danych treningowych i zapobiegamy overfittingowi. Występuje mniejsza szansa że model nauczy się zbioru testowego „na pamięć”
 
-- Random horizontal flip
-    
-- Random translation
-    
-- Random rotation
-    
-- Random zoom
-    
-- Random contrast adjustment
-    
+## Porównanie modeli
 
-Augmentation increases dataset diversity and reduces overfitting by preventing the model from memorizing the training set.
-
-## 📈 Model Comparison
+Model z Augmentacją potrzebował znacznie więcej epok przy szkoleniu. Dzięki temu radzi sobie lepiej od prostego modelu. Oba modele jednak mają ograniczenia. Ponieważ są nauczone na prostym zbiorze fashion MNIST osiągną znacznie gorsze wyniki przy spotkaniu z obrazami w innym formacie (np. przy obrazach o większej rozdzielczości). Jako że jest to prosty model, przyjmuje tylko rozdzielczość 28x28 pikseli, zdjęcie wrzucone w większej rozdzielczości zostaje „ściśnięte” do wymaganych wymiarów przez co może stracić początkowe cechy charakterystyczne. 
 
 ### Augmented Model
 
@@ -157,19 +139,17 @@ Test accuracy: 0.9064
 Test accuracy: 0.9226
 ```
 
-### Analysis
+### Wyniki
 
-- The **simple model achieved ~1.5% higher test accuracy**.
+- **Prosty model osiągnął ~1.5% wyższy test accuracy**.
     
-- Both models show **overfitting**, although early stopping helped reduce it.
+- W obu modelach występuje **overfitting**, pomimo funkcji early stopping, która pomogła ograniczyć zjawisko.
     
-- The augmented model required more epochs but generalizes better in theory.
+- Model z Augmentacją był szkolony na znacznie większej ilości epok.
     
-- Both models struggle with images that differ from the training distribution (e.g., different background colors or higher resolution).
-    
-- Since the model expects **28×28** input, larger images must be downscaled, which may remove important features.
+- Oba modele napotykają problemy przy obrazach innych niż te ze zbioru treningowego (m.in., inny kolor tła lub rozdzielczość).
     
 
-## 📝 Summary
+## Podsumowanie
 
-This project demonstrates the full workflow of building a convolutional neural network for image classification using Fashion MNIST. Both a baseline model and an augmented model were trained and evaluated. While the simple model achieved slightly higher accuracy, both models exhibit limitations when applied to images outside the dataset's narrow domain.
+Mimo że zgodnie z Testem to model prosty osiągnął lepszy wynik o 1,5% to jednak w obu modelach występuje overfitting – mimo zastosowania funkcji early stop udało się zminimalizować zjawisko (nadal jednak występuje). Można zauważyć znacznie gorsze wyniki przy obrazach z tłem w innym kolorze niż ze zbioru treningowego
