@@ -2,6 +2,13 @@
 
 ### Python Web & Deep Learning Project Report
 
+## Website demo
+
+
+https://github.com/user-attachments/assets/006cd1d9-c479-4982-be2d-e6a27c273dc5
+
+
+
 ## 🧠 Task Description
 
 The goal of this project is **image classification** using deep learning. The neural network assigns each input image to one of **10 categories**:
