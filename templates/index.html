@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Porównanie Modeli Fashion MNIST</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .container { display: flex; flex-direction: column; gap: 20px; }
+        .two_collumn { display: flex; gap: 20px; margin-top: 20px; }
+        .border_field { border: 1px solid #ccc; padding: 15px; border-radius: 5px; flex: 1; }
+        .uploaded-image { max-width: 200px; margin-top: 10px; border: 1px solid #ddd; }
+        .prediction-class { font-size: 1.2em; font-weight: bold; color: #007bff; }
+        .charts-container { display: flex; gap: 20px; margin-top: 40px; justify-content: center; }
+        .chart-box { width: 300px; text-align: center; height: 120px; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Klasyfikacja Fashion MNIST</h1>
+        
+        <div class="two_collumn">
+            <div class="border_field">
+                <form action="/random" method="POST">
+                        <label for="random">Wylosuj obraz z zestawu Fashion MNIST:</label><br>
+                        <p> Jest to łatwiejszy sposób, oraz pozwala na ocenę skuteczności modeli.</p>
+                        <input type="submit" value="Wylosuj obraz testowy" style="background-color: blue; color: white; border: none; padding: 10px 20px; cursor: pointer;">
+                </form>
+            </div>
+
+            <div class="border_field">
+                <form action="/" method="POST" enctype="multipart/form-data">
+                    <label for="file">Wybierz obraz (format PNG/JPG):</label><br>
+                    <p> Można wgrać własny obraz, lecz otrzymamy gorsze wyniki niż ze zbioru fashion MNIST. Brak możliwości sprawdzenia poprawności przez brak etykiety.</p>
+                    <input type="file" name="file" id="file" accept="image/*" required>
+                    <br><br>
+                    <input type="submit" value="Analizuj obraz">
+                </form>
+            </div>
+        </div>
+
+        {% if image_data %}
+            <div align="center">
+                <h3>{% if true_label %}Wylosowany obraz{% else %}Przesłany obraz{% endif %}:</h3>
+                <img src="data:image/png;base64,{{ image_data }}" class="uploaded-image" alt="Uploaded Image">
+                {% if true_label %}
+                    <p style="margin-top: 10px;"><strong>Prawdziwa etykieta:</strong> <span style="font-weight: bold; color: blue;">{{ true_label }}</span></p>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {% if predictions %}
+            <h2>Wyniki analizy:</h2>
+            <div class="two_collumn">
+                <div class="border_field">
+                    <h3>Model 1 (Z augmentacją)</h3>
+                    <p>Przewidywana klasa: <span class="prediction-class">{{ predictions.model1.class }}</span></p>
+                    <p>Prawdopodobieństwo: {{ predictions.model1.confidence }}</p>
+                </div>
+                <div class="border_field">
+                    <h3>Model 2 (Prosty)</h3>
+                    <p>Przewidywana klasa: <span class="prediction-class">{{ predictions.model2.class }}</span></p>
+                    <p>Prawdopodobieństwo: {{ predictions.model2.confidence }}</p>
+                </div>
+            </div>
+        {% endif %}
+        
+        {% if error %}
+            <p style="color: red;">{{ error }}</p>
+        {% endif %}
+
+        {% if stats %}
+        <div class="charts-container">
+            <div class="chart-box">
+                <h4>Skuteczność Modelu 1</h4>
+                <canvas id="chartModel1"></canvas>
+                <p><small>Poprawne: {{ stats.model1.correct }}, Błędne: {{ stats.model1.incorrect }}</small></p>
+            </div>
+            <div class="chart-box">
+                <h4>Skuteczność Modelu 2</h4>
+                <canvas id="chartModel2"></canvas>
+                <p><small>Poprawne: {{ stats.model2.correct }}, Błędne: {{ stats.model2.incorrect }}</small></p>
+            </div>
+        </div>
+
+        <script>
+            function createChart(ctx, correct, incorrect) {
+                // Wykres poprawnych / niepoprawnych klasyfikacji
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Wyniki'], // Jedna etykieta
+                        datasets: [
+                            {
+                                label: 'Poprawne',
+                                data: [correct],
+                                backgroundColor: 'lightgreen',
+                                barThickness: 40
+                            },
+                            {
+                                label: 'Błędne',
+                                data: [incorrect],
+                                backgroundColor: 'red',
+                                barThickness: 40 
+                            }
+                        ]
+                    },
+                    options: {
+                        indexAxis: 'y', // Orientacja pozioma
+                        responsive: true,
+                        maintainAspectRatio: false, 
+                        scales: {
+                            x: { 
+                                stacked: true, 
+                                display: false, 
+                                max: correct + incorrect > 0 ? undefined : 1
+                            },
+                            y: { 
+                                stacked: true, 
+                                display: false, 
+                                grid: { display: false }
+                            }
+                        },
+                        plugins: {
+                            legend: { position: 'none' }
+                        }
+                    }
+                });
+            }
+
+            // Dane z Flask
+            const m1_correct = {{ stats.model1.correct }};
+            const m1_wrong = {{ stats.model1.incorrect }};
+            const m2_correct = {{ stats.model2.correct }};
+            const m2_wrong = {{ stats.model2.incorrect }};
+
+            createChart(document.getElementById('chartModel1'), m1_correct, m1_wrong);
+            createChart(document.getElementById('chartModel2'), m2_correct, m2_wrong);
+        </script>
+        {% endif %}
+    </div>
+</body>
+</html>
