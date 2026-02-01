@@ -17,7 +17,7 @@ Klasyfikacja obrazu i przypasowanie go do jednej z 10 kategorii:
 
 ## Opis datasetu
 
-### Źródło pochodzenie
+### Pochodzenie danych
 
 Wykorzystano zbiór danych Fashion MNIST.
 
