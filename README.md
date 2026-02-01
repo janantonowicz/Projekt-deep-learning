@@ -152,4 +152,4 @@ Test accuracy: 0.9226
 
 ## Podsumowanie
 
-Mimo że zgodnie z Testem to model prosty osiągnął lepszy wynik o 1,5% to jednak w obu modelach występuje overfitting – mimo zastosowania funkcji early stop udało się zminimalizować zjawisko (nadal jednak występuje). Można zauważyć znacznie gorsze wyniki przy obrazach z tłem w innym kolorze niż ze zbioru treningowego
+Zgodnie z Testem to model prosty osiągnął lepszy wynik o 1,5% jednak w obu modelach występuje overfitting – dzięki zastosowaniu funkcji early stop udało się zminimalizować zjawisko (nadal jednak występuje). Można zauważyć znacznie gorsze wyniki przy obrazach z tłem w innym kolorze niż ze zbioru treningowego
